@@ -1,0 +1,20 @@
+# One-click deploy on Render's free plan:
+# https://render.com/deploy?repo=https://github.com/D3vxc/File-Converter
+services:
+  - type: web
+    name: morph-file-converter
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # Tuned for the free instance (512 MB RAM, shared CPU).
+      - key: HEAVY_CONCURRENCY
+        value: "1"
+      - key: LIGHT_CONCURRENCY
+        value: "3"
+      - key: MAX_FILE_MB
+        value: "100"
+      - key: FILE_TTL_MIN
+        value: "30"
