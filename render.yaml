@@ -22,3 +22,6 @@ services:
       # 3 hops makes req.ip the real visitor (needed for per-user fairness and rate limits).
       - key: TRUST_PROXY
         value: "3"
+      # Shows the Support (Ko-fi) button across the site.
+      - key: KOFI_USERNAME
+        value: "d3vxc"
