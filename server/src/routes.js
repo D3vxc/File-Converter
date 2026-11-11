@@ -101,7 +101,10 @@ router.get('/formats', (_req, res) => {
 router.get('/health', (req, res) => {
   res.set('Cache-Control', 'no-store');
   // clientIp lets operators confirm TRUST_PROXY is right (it's the caller's own address).
-  res.json({ ok: true, uptime: Math.round(process.uptime()), clientIp: req.ip, queue: stats() });
+  const hops = req.query.hops !== undefined
+    ? Object.fromEntries(['x-forwarded-for', 'cf-connecting-ip', 'true-client-ip', 'x-real-ip'].map((h) => [h, req.get(h) || null]))
+    : undefined;
+  res.json({ ok: true, uptime: Math.round(process.uptime()), clientIp: req.ip, hops, queue: stats() });
 });
 
 router.post('/convert', admission, upload.array('file', 1), (req, res) => {
