@@ -104,7 +104,8 @@ export async function convertData({ input, output, from, to, title }) {
   if (to === 'csv') return fs.writeFile(output, '﻿' + XLSX.utils.sheet_to_csv(first), 'utf8');
   if (to === 'tsv') return fs.writeFile(output, XLSX.utils.sheet_to_csv(first, { FS: '\t' }), 'utf8');
   if (to === 'html') {
-    const tables = wb.SheetNames.map((n) => `<h2>${n}</h2>\n${XLSX.utils.sheet_to_html(wb.Sheets[n], { header: '', footer: '' })}`);
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const tables = wb.SheetNames.map((n) => `<h2>${esc(n)}</h2>\n${XLSX.utils.sheet_to_html(wb.Sheets[n], { header: '', footer: '' })}`);
     return fs.writeFile(output, htmlPage(tables.join('\n'), title), 'utf8');
   }
   await fs.writeFile(output, XLSX.write(wb, { bookType: BOOK_TYPES[to], type: 'buffer', compression: true }));

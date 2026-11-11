@@ -204,7 +204,7 @@ export function useConverter({ mode = 'convert', toolSlug, onAdd } = {}) {
     runBatch,
     setTarget: (id, target) => patch(id, { target, status: 'idle', result: null, jobId: null }),
     setOptions: (id, options) => patch(id, (it) => ({ options: { ...it.options, ...options }, ...(it.status === 'done' ? { status: 'idle', result: null } : {}) })),
-    setAll: (fn) => setItems((list) => list.map((it) => (it.status === 'idle' || it.status === 'error' ? { ...it, ...fn(it) } : it))),
+    setAll: useCallback((fn) => setItems((list) => list.map((it) => (it.status === 'idle' || it.status === 'error' ? { ...it, ...fn(it) } : it))), []),
     zipAllUrl: doneServer.length > 1 ? zipUrl(doneServer) : null,
   };
 }

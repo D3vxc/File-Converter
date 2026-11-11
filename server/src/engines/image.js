@@ -116,4 +116,10 @@ export async function convertImage({ input, output, from, to, options = {}, sign
       throw new Error(`Unsupported image target: ${to}`);
   }
   await img.toFile(output);
+
+  // "Compress" (same format, no resize) must never return a bigger file.
+  if (from === to && !width && !height && !options.grayscale) {
+    const [a, b] = await Promise.all([fs.stat(input), fs.stat(output)]);
+    if (b.size >= a.size) await fs.copyFile(input, output);
+  }
 }

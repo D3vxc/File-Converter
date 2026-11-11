@@ -3,15 +3,16 @@ import { Gauge, Infinity as InfinityIcon, Lock, MonitorSmartphone, Plus, ShieldC
 import { useEffect, useState } from 'react';
 import Converter from '../components/Converter.jsx';
 import ToolCard from '../components/ToolCard.jsx';
+import { formatBytes } from '../lib/formats.js';
 import { useFormats } from '../lib/FormatsContext.jsx';
 import { TOOLS } from '../lib/tools.js';
 
 const WORDS = ['anything', 'videos', 'images', 'PDFs', 'audio', 'spreadsheets'];
 
-const FEATURES = [
+const FEATURES = (mins) => [
   { icon: InfinityIcon, title: 'Free, for real', text: 'No ads, no subscriptions, no daily caps, no watermarks.' },
   { icon: MonitorSmartphone, title: 'On-device when possible', text: 'Simple image conversions run in your browser and never leave your device.' },
-  { icon: Lock, title: 'Private by default', text: 'Uploads are deleted after an hour. Photo EXIF and GPS data is stripped.' },
+  { icon: Lock, title: 'Private by default', text: `Uploads are deleted after ${mins} minutes. Photo EXIF and GPS data is stripped.` },
   { icon: Gauge, title: 'Fair queue', text: 'A round-robin queue means one heavy user can never slow everyone else down.' },
   { icon: Sparkles, title: 'Fine-tuned output', text: 'Quality, resolution, trimming, frame rate, bitrate and more.' },
   { icon: ShieldCheck, title: 'Open source', text: 'Every line of code is public. Host your own copy for free.' },
@@ -19,13 +20,15 @@ const FEATURES = [
 
 const FAQ = [
   ['Is it really free?', 'Yes. There are no paid plans, ads or sign-ups. The project runs on free hosting and open-source tools.'],
-  ['What happens to my files?', 'Files are processed and then deleted automatically after 60 minutes. You can also delete them right away by removing them from the list.'],
-  ['How big can my files be?', 'Up to 500 MB per file by default.'],
+  ['What happens to my files?', ({ mins }) => `Files are processed and then deleted automatically after ${mins} minutes. You can also delete them right away by removing them from the list.`],
+  ['How big can my files be?', ({ size }) => `Up to ${size} per file.`],
   ['Why is my file in a queue?', 'When lots of people convert at once, jobs wait their turn fairly. Quick jobs (images, documents) use a separate lane so they are never stuck behind long videos.'],
 ];
 
 export default function Home() {
-  const { totalConversions, capabilities } = useFormats();
+  const { totalConversions, capabilities, limits = {} } = useFormats();
+  const mins = limits.retentionMinutes || 60;
+  const size = limits.maxFileSize ? formatBytes(limits.maxFileSize) : '100 MB';
   const [w, setW] = useState(0);
   const [open, setOpen] = useState(0);
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function Home() {
           <Converter />
         </motion.div>
         <div className="stats" style={{ maxWidth: 860, marginInline: 'auto' }}>
-          {[[`${totalConversions || '390'}+`, 'conversions'], ['0', 'ads'], ['1 h', 'auto-delete'], ['500 MB', 'per file']].map(([b, s]) => (
+          {[[`${totalConversions || '390'}+`, 'conversions'], ['0', 'ads'], [mins >= 60 ? `${mins / 60} h` : `${mins} min`, 'auto-delete'], [size, 'per file']].map(([b, s]) => (
             <div className="stat" key={s}><b>{b}</b><span>{s}</span></div>
           ))}
         </div>
@@ -79,7 +82,7 @@ export default function Home() {
           <h2>Built to be fair to everyone</h2>
         </div>
         <div className="features">
-          {FEATURES.map(({ icon: Icon, title, text }) => (
+          {FEATURES(mins).map(({ icon: Icon, title, text }) => (
             <div className="feature" key={title}>
               <div className="ico"><Icon size={20} /></div>
               <h3>{title}</h3>
@@ -98,7 +101,7 @@ export default function Home() {
               <AnimatePresence initial={false}>
                 {open === i && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
-                    <div className="answer">{a}</div>
+                    <div className="answer">{typeof a === 'function' ? a({ mins, size }) : a}</div>
                   </motion.div>
                 )}
               </AnimatePresence>

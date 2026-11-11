@@ -48,7 +48,7 @@ export function suggestTarget(ext, conversions, formats) {
     image: ['webp', 'jpg', 'png'],
     video: ['mp4', 'webm'],
     audio: ['mp3', 'wav'],
-    document: ['pdf', 'docx', 'txt'],
+    document: ['pdf', 'docx', 'html', 'txt'],
     data: ['xlsx', 'csv', 'json'],
     archive: ['zip'],
   }[catOf(ext, formats)] || [];

@@ -53,5 +53,8 @@ export async function convertLocally(file, to, options = {}) {
   const q = Math.min(100, Math.max(1, Number(options.quality) || 82)) / 100;
   const blob = await new Promise((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('Encoding failed'))), MIME[to], q));
   canvas.width = canvas.height = 0; // free memory
+  // Re-encoding to the same format (compressing) must never make the file bigger.
+  const ext = file.name.toLowerCase().split('.').pop().replace('jpeg', 'jpg');
+  if (ext === to && !mw && !mh && blob.size >= file.size) return file;
   return blob;
 }

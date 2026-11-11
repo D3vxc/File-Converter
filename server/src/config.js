@@ -30,6 +30,10 @@ export const config = {
   uploadsPerWindow: num(process.env.UPLOADS_PER_10MIN, 300),
   apiRequestsPerMinute: num(process.env.API_REQUESTS_PER_MIN, 900),
 
+  // Donation links shown in the UI. Set e.g. KOFI_USERNAME=yourname in the host's environment.
+  kofiUrl: process.env.KOFI_URL || (process.env.KOFI_USERNAME ? `https://ko-fi.com/${process.env.KOFI_USERNAME}` : null),
+  bmcUrl: process.env.BMC_URL || (process.env.BMC_USERNAME ? `https://buymeacoffee.com/${process.env.BMC_USERNAME}` : null),
+
   trustProxy: num(process.env.TRUST_PROXY, 1),
   corsOrigin: process.env.CORS_ORIGIN || '*',
   clientDist: process.env.CLIENT_DIST || path.resolve(import.meta.dirname, '../../client/dist'),

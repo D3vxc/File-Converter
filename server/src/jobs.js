@@ -79,6 +79,11 @@ async function execute(job) {
 
 function friendlyError(err) {
   const msg = String(err?.message || err);
+  const details = String(err?.details || '');
+  if (/does not contain any stream|Output file #0 does not contain|matches no streams/i.test(details)) {
+    return 'This file has no audio track to extract.';
+  }
+  if (/Cancelled/.test(msg)) return 'Cancelled';
   if (/Invalid data found|could not find codec|moov atom not found|Invalid argument/i.test(err?.details || msg)) {
     return 'This file looks damaged or is not a valid media file.';
   }

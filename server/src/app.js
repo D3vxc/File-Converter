@@ -35,6 +35,8 @@ export function createApp() {
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     message: { error: 'Too many requests. Slow down a little and try again.' },
+    // Status polling is cheap; don't let many users behind one IP (schools, offices) trip the limit.
+    skip: (req) => req.method === 'GET' && req.path.startsWith('/jobs'),
   });
   const uploadLimiter = rateLimit({
     windowMs: 10 * 60_000,

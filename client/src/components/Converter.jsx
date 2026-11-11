@@ -1,6 +1,6 @@
 import { AnimatePresence, Reorder, motion, useDragControls } from 'framer-motion';
 import { ArrowRight, Download, GripVertical, LoaderCircle, Lock, RotateCcw, Trash2, Zap } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { extOf, formatBytes, labelOf, suggestTarget } from '../lib/formats.js';
 import { useFormats } from '../lib/FormatsContext.jsx';
 import { useConverter } from '../lib/useConverter.js';
@@ -8,6 +8,7 @@ import Dropzone from './Dropzone.jsx';
 import FileCard, { Check } from './FileCard.jsx';
 import FormatPicker from './FormatPicker.jsx';
 import OptionsPanel, { panelFor } from './OptionsPanel.jsx';
+import { SupportNudge } from './Support.jsx';
 
 function ReorderRow({ item, children }) {
   const controls = useDragControls();
@@ -37,6 +38,12 @@ export default function Converter({ tool }) {
   );
 
   const c = useConverter({ mode, toolSlug: tool?.slug, onAdd });
+
+  // Files dropped before the format list loaded get their default target now.
+  const { setAll } = c;
+  useEffect(() => {
+    if (ready && !tool) setAll((it) => (it.target ? {} : { target: suggestTarget(it.ext, conversions, formats) }));
+  }, [ready, tool, conversions, formats, setAll]);
 
   const add = (files) => {
     const bad = [];
@@ -103,6 +110,7 @@ export default function Converter({ tool }) {
                   <RotateCcw size={16} /> Start over
                 </button>
               </div>
+              <SupportNudge />
             </motion.div>
           ) : b && b.status !== 'error' ? (
             <motion.div key="busy" className="result-hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -205,6 +213,7 @@ export default function Converter({ tool }) {
               {idle.length > 1 ? ` ${idle.length} files` : ''}
             </button>
           </div>
+          {done.length > 0 && !busy && <SupportNudge />}
           {missingTarget && <p className="hint">Pick an output format for each file to continue.</p>}
         </>
       )}

@@ -50,6 +50,8 @@ function videoArgs(to, o) {
   const filters = [];
   const sf = scaleFilter(o.resolution);
   if (sf) filters.push(sf);
+  // H.264 / 4:2:0 needs even dimensions; phone and screen recordings are often odd.
+  else if (to !== 'gif') filters.push('scale=trunc(iw/2)*2:trunc(ih/2)*2');
   if (num(o.fps)) filters.push(`fps=${num(o.fps)}`);
   const vf = filters.length ? ['-vf', filters.join(',')] : [];
   const mute = o.mute ? ['-an'] : null;

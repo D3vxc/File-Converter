@@ -15,6 +15,6 @@ services:
       - key: LIGHT_CONCURRENCY
         value: "3"
       - key: MAX_FILE_MB
-        value: "100"
+        value: "95" # Render sits behind Cloudflare, which caps uploads at 100 MB
       - key: FILE_TTL_MIN
         value: "30"

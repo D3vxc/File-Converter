@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, CircleAlert, Download, LoaderCircle, MonitorSmartphone, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { CATEGORIES, catOf, formatBytes, labelOf } from '../lib/formats.js';
+import { CATEGORIES, catOf, extOf, formatBytes, labelOf } from '../lib/formats.js';
 import { useFormats } from '../lib/FormatsContext.jsx';
 import FormatPicker from './FormatPicker.jsx';
 import OptionsPanel from './OptionsPanel.jsx';
@@ -14,7 +14,7 @@ export function FileIcon({ ext, formats }) {
   return (
     <div className="file-icon" style={{ '--cat': color }}>
       <Icon size={16} strokeWidth={2} />
-      {labelOf(ext || '?', formats).slice(0, 5)}
+      {(labelOf(ext || '?', formats).length <= 5 ? labelOf(ext, formats) : ext.toUpperCase()).slice(0, 5) || '?'}
     </div>
   );
 }
@@ -59,7 +59,9 @@ export default function FileCard({ item: it, onTarget, onOptions, onRemove, onRe
   const [showOpts, setShowOpts] = useState(false);
   const busy = ['waiting', 'uploading', 'queued', 'processing'].includes(it.status);
   const pct = it.status === 'uploading' ? (it.uploadProgress || 0) * 0.35 : it.status === 'processing' ? 0.35 + (it.progress || 0) * 0.65 : it.status === 'queued' ? 0.35 : it.status === 'done' ? 1 : 0;
-  const saved = it.result && it.size ? 1 - it.result.size / it.size : 0;
+  // Size savings only mean something when the file stays the same kind (image→image, video→video…).
+  const sameKind = catOf(it.ext, formats) === catOf(extOf(it.result?.name || ''), formats);
+  const saved = it.result && it.size && sameKind ? 1 - it.result.size / it.size : 0;
 
   return (
     <motion.div

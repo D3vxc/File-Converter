@@ -1,8 +1,10 @@
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from './Nav.jsx';
+import { useSupportUrl } from './Support.jsx';
 
 export default function Footer() {
+  const support = useSupportUrl();
   return (
     <footer>
       <div className="container row">
@@ -14,6 +16,7 @@ export default function Footer() {
           <Link to="/tools">Tools</Link>
           <Link to="/formats">Formats</Link>
           <Link to="/privacy">Privacy</Link>
+          {support && <a href={support} target="_blank" rel="noopener noreferrer">Support the project</a>}
           <a href="https://github.com/D3vxc/File-Converter" target="_blank" rel="noreferrer">Source code</a>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

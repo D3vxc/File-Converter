@@ -51,4 +51,6 @@ docker run -d --restart unless-stopped -p 80:8080 morph
 | `FILE_TTL_MIN` | 60 | Files deleted after this many minutes |
 | `HEAVY_CONCURRENCY` | cores / 2 | Parallel video/office jobs |
 | `LIGHT_CONCURRENCY` | cores × 2 | Parallel image/doc/data jobs |
+| `KOFI_USERNAME` | – | Shows a "Support" (Ko-fi) button; hidden when unset |
+| `BMC_USERNAME` | – | Same, for Buy Me a Coffee |
 | `CORS_ORIGIN` | `*` | Allowed origins if the frontend is hosted separately (`VITE_API_URL` on the client) |

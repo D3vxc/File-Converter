@@ -7,7 +7,7 @@ import { useFormats } from '../lib/FormatsContext.jsx';
 
 /** "to [MP4 ▾]" button that opens a searchable, categorised format grid. */
 export default function FormatPicker({ from, value, onChange, disabled, targets: forced }) {
-  const { formats, conversions } = useFormats();
+  const { formats, conversions, ready } = useFormats();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('all');
@@ -57,6 +57,7 @@ export default function FormatPicker({ from, value, onChange, disabled, targets:
     };
   }, [open]);
 
+  if (!ready && !forced) return <span className="status-text">Loading…</span>;
   if (!targets.length) {
     return <span className="badge badge-err">Not supported</span>;
   }

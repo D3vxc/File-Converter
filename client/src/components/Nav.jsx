@@ -2,6 +2,7 @@ import { Moon, Sun } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { SupportButton } from './Support.jsx';
 
 function currentTheme() {
   const t = document.documentElement.dataset.theme;
@@ -61,6 +62,7 @@ export default function Nav() {
           <NavLink to="/formats" className="hide-sm">Formats</NavLink>
           <NavLink to="/privacy" className="hide-sm">Privacy</NavLink>
         </nav>
+        <SupportButton />
         <button className="icon-btn" onClick={toggle} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
