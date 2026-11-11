@@ -34,6 +34,12 @@ export const config = {
   kofiUrl: process.env.KOFI_URL || (process.env.KOFI_USERNAME ? `https://ko-fi.com/${process.env.KOFI_USERNAME}` : null),
   bmcUrl: process.env.BMC_URL || (process.env.BMC_USERNAME ? `https://buymeacoffee.com/${process.env.BMC_USERNAME}` : null),
 
+  // Free hosts (e.g. Render) put idle services to sleep, so the first visitor waits for a cold start.
+  // When a public URL is known, the server requests its own health check through it now and then.
+  // Render sets RENDER_EXTERNAL_URL automatically. KEEP_ALIVE_MIN=0 turns this off.
+  keepAliveUrl: process.env.KEEP_ALIVE_URL || process.env.RENDER_EXTERNAL_URL || null,
+  keepAliveMs: num(process.env.KEEP_ALIVE_MIN, 10) * 60 * 1000,
+
   trustProxy: num(process.env.TRUST_PROXY, 1),
   corsOrigin: process.env.CORS_ORIGIN || '*',
   clientDist: process.env.CLIENT_DIST || path.resolve(import.meta.dirname, '../../client/dist'),

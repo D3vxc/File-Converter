@@ -28,6 +28,14 @@ server.keepAliveTimeout = 65 * 1000;
 const sweeper = setInterval(() => sweep().catch(() => {}), 60 * 1000);
 sweeper.unref();
 
+// Keep the free instance awake: the request goes out through the public URL, so the host counts it as traffic.
+if (config.keepAliveUrl && config.keepAliveMs > 0) {
+  const target = `${config.keepAliveUrl.replace(/\/$/, '')}/api/health`;
+  const ping = () => fetch(target, { signal: AbortSignal.timeout(30_000) }).catch((e) => console.warn(`keep-alive ping failed: ${e.message}`));
+  setInterval(ping, config.keepAliveMs).unref();
+  console.log(`  keep-alive: ${target} every ${config.keepAliveMs / 60000} min`);
+}
+
 if (process.env.LOG_STATS) setInterval(() => console.log(JSON.stringify(stats())), 30_000).unref();
 
 function shutdown(signal) {
