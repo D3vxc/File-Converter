@@ -18,3 +18,7 @@ services:
         value: "95" # Render sits behind Cloudflare, which caps uploads at 100 MB
       - key: FILE_TTL_MIN
         value: "30"
+      # Requests arrive via Cloudflare and Render's load balancer: client, CF edge, LB.
+      # 3 hops makes req.ip the real visitor (needed for per-user fairness and rate limits).
+      - key: TRUST_PROXY
+        value: "3"
