@@ -17,6 +17,7 @@ const TOOLS = {
   'split-pdf': { min: 1, max: 1, accept: (e) => e === 'pdf', lane: 'light' },
   'compress-pdf': { min: 1, max: 1, accept: (e) => e === 'pdf', lane: 'heavy' },
   'images-to-pdf': { min: 1, accept: (e) => IMAGE_EXTS.has(e) && (e !== 'bmp' || capabilities.media), lane: 'light' },
+  'edit-pdf': { min: 1, max: 1, accept: (e) => e === 'pdf', lane: 'light' },
 };
 
 class HttpError extends Error {
@@ -56,7 +57,7 @@ const upload = multer({
       cb(null, `${String(req.fileIndex).padStart(3, '0')}.${extOf(decodeName(file.originalname)) || 'bin'}`);
     },
   }),
-  limits: { fileSize: config.maxFileSize, files: config.maxFilesPerRequest, fields: 20, fieldSize: 64 * 1024 },
+  limits: { fileSize: config.maxFileSize, files: config.maxFilesPerRequest, fields: 20, fieldSize: 1024 * 1024 },
 });
 
 // Browsers send UTF-8 names but busboy decodes them as latin1.

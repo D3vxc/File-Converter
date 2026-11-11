@@ -8,6 +8,7 @@ import { convertImage } from './engines/image.js';
 import { convertMedia } from './engines/media.js';
 import { convertOffice } from './engines/office.js';
 import { compressPdf, imagesToPdf, mergePdfs, pdfToImages, splitPdf } from './engines/pdf.js';
+import { editPdfText, parseEdits } from './engines/pdfEdit.js';
 
 const EXT_OUT = { tgz: 'tar.gz' };
 
@@ -132,6 +133,13 @@ export async function processJob(job, { signal, onProgress }) {
         );
       }
       await imagesToPdf(inputs.map((i) => i.path), output, { pageSize: opts.pageSize, margin: opts.margin });
+      return finalize(output, name);
+    }
+
+    case 'edit-pdf': {
+      const name = `${base}-edited.pdf`;
+      const output = path.join(outDir, name);
+      await editPdfText(first.path, output, parseEdits(opts.edits));
       return finalize(output, name);
     }
 

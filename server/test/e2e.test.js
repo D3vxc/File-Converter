@@ -199,6 +199,32 @@ describe('documents & data', () => {
 });
 
 describe('pdf tools', () => {
+  test('edit text in place', async () => {
+    const { getDocumentProxy } = await import('unpdf');
+    const textOf = async (buf) => {
+      const pdf = await getDocumentProxy(new Uint8Array(buf));
+      const pages = [];
+      for (let p = 1; p <= pdf.numPages; p++) pages.push((await (await pdf.getPage(p)).getTextContent()).items.map((i) => i.str).join(' ').trim());
+      return pages;
+    };
+    // fx.pdf has "Page N" in 24pt Helvetica at (40, 300) on each page.
+    const run = { transform: [24, 0, 0, 24, 40, 300], width: 70, height: 24 };
+    const edits = [
+      { ...run, page: 1, text: 'Page 9' }, // glyphs exist in the original font
+      { ...run, page: 2, text: 'Страница 3' }, // needs a substitute Unicode font
+    ];
+    const { status, body } = await upload('/api/tools/edit-pdf', fx.pdf, { options: { edits } });
+    assert.equal(status, 202, JSON.stringify(body));
+    const job = await waitFor(body.id);
+    assert.equal(job.status, 'done', job.error);
+    const buf = Buffer.from(await (await fetch(`${base}/api/jobs/${body.id}/download`)).arrayBuffer());
+    assert.deepEqual(await textOf(buf), ['Page 1', 'Page 9', 'Страница 3']);
+  });
+  test('edit text rejects bad edits', async () => {
+    const { body } = await upload('/api/tools/edit-pdf', fx.pdf, { options: { edits: [] } });
+    const job = await waitFor(body.id);
+    assert.equal(job.status, 'error');
+  });
   test('merge', async () => {
     const { body } = await upload('/api/tools/merge-pdf', [fx.pdf, fx.pdf]);
     const job = await waitFor(body.id);

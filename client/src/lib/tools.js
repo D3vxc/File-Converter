@@ -1,5 +1,5 @@
 import {
-  Combine, FileArchive, FileDown, FileImage, Film, ImageDown, Images, Music, Scaling, Scissors, Sparkles, SplitSquareHorizontal,
+  Combine, FileArchive, FileDown, FileImage, FilePen, Film, ImageDown, Images, Music, Scaling, Scissors, Sparkles, SplitSquareHorizontal,
 } from 'lucide-react';
 
 const IMAGES = ['jpg', 'png', 'webp', 'avif', 'gif', 'tiff', 'bmp', 'svg'];
@@ -12,6 +12,7 @@ const sameOr = (fallback) => (ext, conversions) => (conversions?.[ext]?.includes
  *  - convert: each file converts independently (via /api/convert or in-browser)
  *  - each:    each file runs a server tool independently (/api/tools/:slug)
  *  - batch:   all files go into one job (/api/tools/:slug), order matters
+ *  - editor:  custom in-browser editor UI that saves through /api/tools/:slug
  */
 export const TOOLS = [
   {
@@ -45,6 +46,11 @@ export const TOOLS = [
     blurb: 'Cut a section out of a video or song by start and end time.',
     kind: 'convert', accept: [...VIDEOS, ...AUDIOS], target: (ext) => (VIDEOS.includes(ext) ? 'mp4' : AUDIOS.includes(ext) && ext !== 'wma' && ext !== 'amr' && ext !== 'weba' ? ext : 'mp3'),
     panel: 'trim', defaults: { trimStart: 0, trimEnd: 10 },
+  },
+  {
+    slug: 'edit-pdf', title: 'Edit PDF Text', cat: 'document', icon: FilePen,
+    blurb: 'Click any text in a PDF and change it. Fonts, colours and layout stay as they were.',
+    kind: 'editor', accept: ['pdf'],
   },
   {
     slug: 'merge-pdf', title: 'Merge PDF', cat: 'document', icon: Combine,

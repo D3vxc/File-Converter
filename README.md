@@ -5,7 +5,7 @@ Convert images, video, audio, documents, spreadsheets and archives. No ads, no s
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/D3vxc/File-Converter)
 
 - **~390 conversions**: JPG/PNG/WEBP/AVIF/GIF/TIFF/ICO/SVG, MP4/WEBM/MKV/MOV/AVI/GIF, MP3/WAV/AAC/OGG/OPUS/FLAC, DOCX/MD/HTML/TXT/PDF, XLSX/CSV/JSON/YAML/XML, ZIP/TAR/TAR.GZ
-- **Tools**: compress & resize images, compress video, video → GIF, extract audio, trim, merge / split / compress PDF, images → PDF, PDF → JPG
+- **Tools**: compress & resize images, compress video, video → GIF, extract audio, trim, edit PDF text in place, merge / split / compress PDF, images → PDF, PDF → JPG
 - **Options**: quality, dimensions, resolution, frame rate, bitrate, trimming, mute, EXIF stripping
 
 ## How it stays fast for many users at once
