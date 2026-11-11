@@ -37,12 +37,17 @@ export const tools = {
   ),
   gs: firstWorking([process.env.GS_PATH, win ? 'gswin64c' : 'gs', 'gs'], ['--version']),
   pdftoppm: firstWorking([process.env.PDFTOPPM_PATH, 'pdftoppm'], ['-v']),
+  pdftocairo: firstWorking([process.env.PDFTOCAIRO_PATH, 'pdftocairo'], ['-v']),
+  qpdf: firstWorking([process.env.QPDF_PATH, 'qpdf'], ['--version']),
 };
 
 export const capabilities = {
   media: Boolean(tools.ffmpeg),
   office: Boolean(tools.soffice),
   pdfRaster: Boolean(tools.pdftoppm || tools.gs),
+  pdfSvg: Boolean(tools.pdftocairo),
+  officeRaster: Boolean(tools.soffice && (tools.pdftoppm || tools.gs)),
+  officeSvg: Boolean(tools.soffice && tools.pdftocairo),
   pdfCompress: true, // falls back to pdf-lib re-save without Ghostscript
   ghostscript: Boolean(tools.gs),
 };

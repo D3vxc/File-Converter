@@ -24,6 +24,21 @@ async function finalize(file, name) {
   return { path: file, name, size };
 }
 
+async function rasterize({ pdf, base, to, opts, signal, workDir, outDir }) {
+  const pagesDir = path.join(workDir, 'pages');
+  await fs.mkdir(pagesDir, { recursive: true });
+  const pages = await pdfToImages({ input: pdf, outDir: pagesDir, baseName: base, to, options: opts, signal });
+  if (!pages.length) throw new Error('No pages could be rendered');
+  if (pages.length === 1) {
+    const name = outName(base, to);
+    await fs.rename(pages[0], path.join(outDir, name));
+    return finalize(path.join(outDir, name), name);
+  }
+  const zipName = `${base}-${to}.zip`;
+  await zipFiles(pages, path.join(outDir, zipName));
+  return finalize(path.join(outDir, zipName), zipName);
+}
+
 /** Runs one job. Returns { path, name, size } of the result file. */
 export async function processJob(job, { signal, onProgress }) {
   const dir = path.join(config.dataDir, job.id);
@@ -60,17 +75,14 @@ export async function processJob(job, { signal, onProgress }) {
         case 'archive':
           await convertArchive(args);
           break;
-        case 'pdfraster': {
-          const pages = await pdfToImages({ input: first.path, outDir: workDir, baseName: base, to, options: opts, signal });
-          if (!pages.length) throw new Error('No pages could be rendered');
-          if (pages.length === 1) {
-            await fs.rename(pages[0], output);
-            return finalize(output, name);
-          }
-          const zipName = `${base}-${to}.zip`;
-          const zip = path.join(outDir, zipName);
-          await zipFiles(pages, zip);
-          return finalize(zip, zipName);
+        case 'pdfraster':
+          return rasterize({ pdf: first.path, base, to, opts, signal, workDir, outDir });
+        case 'officeRaster': {
+          // Office document -> PDF (LibreOffice) -> one image per page.
+          const pdf = path.join(workDir, 'rendered.pdf');
+          await convertOffice({ ...args, output: pdf, to: 'pdf' });
+          onProgress(0.5);
+          return rasterize({ pdf, base, to, opts, signal, workDir, outDir });
         }
         default:
           throw new Error(`Unknown engine ${job.engine}`);
@@ -81,12 +93,12 @@ export async function processJob(job, { signal, onProgress }) {
     case 'merge-pdf': {
       const name = `${base}-merged.pdf`;
       const output = path.join(outDir, name);
-      await mergePdfs(job.inputs.map((i) => i.path), output);
+      await mergePdfs(job.inputs.map((i) => i.path), output, { signal });
       return finalize(output, name);
     }
 
     case 'split-pdf': {
-      const parts = await splitPdf(first.path, workDir, base, { ranges: opts.ranges });
+      const parts = await splitPdf(first.path, workDir, base, { ranges: opts.ranges, signal });
       if (parts.length === 1) {
         const name = path.basename(parts[0]);
         await fs.rename(parts[0], path.join(outDir, name));

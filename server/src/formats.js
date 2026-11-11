@@ -51,6 +51,7 @@ export const FORMATS = {
   pptx: { label: 'PPTX', cat: 'document' },
   ppt: { label: 'PPT', cat: 'document' },
   odp: { label: 'ODP', cat: 'document' },
+  epub: { label: 'EPUB', cat: 'document' },
   // data / spreadsheets
   xlsx: { label: 'XLSX', cat: 'data' },
   xls: { label: 'XLS', cat: 'data' },
@@ -104,9 +105,13 @@ const RULES = [
   { from: ['txt'], to: ['pdf', 'html', 'md'], engine: 'doc', lane: 'light' },
   { from: ['pdf'], to: ['txt'], engine: 'doc', lane: 'light' },
   { from: ['pdf'], to: ['png', 'jpg'], engine: 'pdfraster', lane: 'heavy', needs: 'pdfRaster' },
-  { from: TEXT_DOCS, to: ['pdf', 'docx', 'odt', 'rtf'], engine: 'office', lane: 'heavy', needs: 'office' },
-  { from: SLIDES, to: ['pdf', 'pptx', 'odp'], engine: 'office', lane: 'heavy', needs: 'office' },
+  { from: ['pdf'], to: ['svg'], engine: 'pdfraster', lane: 'heavy', needs: 'pdfSvg' },
+  { from: TEXT_DOCS, to: ['pdf', 'docx', 'doc', 'odt', 'rtf', 'epub'], engine: 'office', lane: 'heavy', needs: 'office' },
+  { from: ['doc', 'odt', 'rtf'], to: ['html', 'txt'], engine: 'office', lane: 'heavy', needs: 'office' },
+  { from: SLIDES, to: ['pdf', 'pptx', 'ppt', 'odp'], engine: 'office', lane: 'heavy', needs: 'office' },
   { from: ['xlsx', 'xls', 'ods', 'csv'], to: ['pdf'], engine: 'office', lane: 'heavy', needs: 'office' },
+  { from: [...TEXT_DOCS, ...SLIDES, 'xlsx', 'xls', 'ods'], to: ['jpg', 'png'], engine: 'officeRaster', lane: 'heavy', needs: 'officeRaster' },
+  { from: [...TEXT_DOCS, ...SLIDES, 'xlsx', 'xls', 'ods'], to: ['svg'], engine: 'officeRaster', lane: 'heavy', needs: 'officeSvg' },
   { from: SHEETS_IN, to: SHEETS_OUT, engine: 'data', lane: 'light' },
   { from: ARCHIVES, to: ARCHIVES, engine: 'archive', lane: 'light' },
 ];

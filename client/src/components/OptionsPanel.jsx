@@ -55,7 +55,7 @@ function Trim({ o, set }) {
 export function panelFor(from, to, formats) {
   const fc = formats?.[from]?.cat;
   const tc = formats?.[to]?.cat;
-  if (from === 'pdf' && (to === 'jpg' || to === 'png')) return 'pdfRaster';
+  if ((from === 'pdf' || fc === 'document' || ['xlsx', 'xls', 'ods'].includes(from)) && (to === 'jpg' || to === 'png')) return 'pdfRaster';
   if (fc === 'image' && to === 'pdf') return 'imagesToPdf';
   if (fc === 'video' && to === 'gif') return 'gif';
   if (fc === 'image' && tc === 'image' && to !== 'ico') return 'image';

@@ -76,6 +76,21 @@ export const TOOLS = [
     blurb: 'DOCX, DOC, ODT and RTF to a print-ready PDF.',
     kind: 'convert', accept: ['docx', 'doc', 'odt', 'rtf'], target: () => 'pdf',
   },
+  {
+    slug: 'word-to-jpg', title: 'Word to Image', cat: 'document', icon: FileImage, needs: 'officeRaster',
+    blurb: 'Turn every page of a Word document into a JPG image.',
+    kind: 'convert', accept: ['docx', 'doc', 'odt', 'rtf'], target: () => 'jpg', panel: 'pdfRaster', defaults: { dpi: 150 },
+  },
+  {
+    slug: 'powerpoint-to-pdf', title: 'PowerPoint to PDF', cat: 'document', icon: FileDown, needs: 'office',
+    blurb: 'PPTX, PPT and ODP slides to a shareable PDF.',
+    kind: 'convert', accept: ['pptx', 'ppt', 'odp'], target: () => 'pdf',
+  },
+  {
+    slug: 'pdf-to-svg', title: 'PDF to SVG', cat: 'document', icon: FileImage, needs: 'pdfSvg',
+    blurb: 'Sharp, scalable vector pages for design tools and the web.',
+    kind: 'convert', accept: ['pdf'], target: () => 'svg',
+  },
 ];
 
 export const toolBySlug = (slug) => TOOLS.find((t) => t.slug === slug);

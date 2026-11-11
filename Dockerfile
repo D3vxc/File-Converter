@@ -10,11 +10,13 @@ RUN npm run build
 
 # ---------- runtime ----------
 FROM node:22-bookworm-slim
-ARG WITH_LIBREOFFICE=false
+# LibreOffice powers Word/PowerPoint/Excel conversions. Build with WITH_LIBREOFFICE=false for a ~400 MB smaller image.
+ARG WITH_LIBREOFFICE=true
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg poppler-utils ghostscript ca-certificates \
+ && apt-get install -y --no-install-recommends ffmpeg poppler-utils qpdf ghostscript ca-certificates \
  && if [ "$WITH_LIBREOFFICE" = "true" ]; then \
-      apt-get install -y --no-install-recommends libreoffice-writer libreoffice-calc libreoffice-impress fonts-dejavu fonts-liberation; \
+      apt-get install -y --no-install-recommends libreoffice-writer libreoffice-calc libreoffice-impress \
+        fonts-dejavu fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea fonts-noto-core; \
     fi \
  && rm -rf /var/lib/apt/lists/*
 

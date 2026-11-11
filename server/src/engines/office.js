@@ -7,10 +7,17 @@ import { run } from './run.js';
 
 const FILTERS = {
   pdf: 'pdf',
-  docx: 'docx:"MS Word 2007 XML"',
+  docx: 'docx:MS Word 2007 XML',
+  doc: 'doc:MS Word 97',
+  epub: 'epub',
+  html: 'html:XHTML Writer File:UTF8',
+  txt: 'txt:Text (encoded):UTF8',
+  xlsx: 'xlsx:Calc MS Excel 2007 XML',
+  ods: 'ods',
+  ppt: 'ppt:MS PowerPoint 97',
   odt: 'odt',
   rtf: 'rtf',
-  pptx: 'pptx:"Impress MS PowerPoint 2007 XML"',
+  pptx: 'pptx:Impress MS PowerPoint 2007 XML',
   odp: 'odp',
 };
 
@@ -32,7 +39,8 @@ export async function convertOffice({ input, output, from, to, workDir, signal, 
       '--convert-to', FILTERS[to] || to, '--outdir', outDir, src],
     { signal, env: { HOME: workDir } },
   );
-  const produced = (await fs.readdir(outDir)).filter((f) => f.toLowerCase().endsWith(`.${to}`));
+  const ext = to === 'html' ? ['html', 'xhtml', 'htm'] : [to];
+  const produced = (await fs.readdir(outDir)).filter((f) => ext.some((e) => f.toLowerCase().endsWith(`.${e}`)));
   if (!produced.length) throw new Error('The office engine could not convert this file');
   await fs.rename(path.join(outDir, produced[0]), output);
 }

@@ -253,3 +253,25 @@ describe('load & fairness', () => {
     assert.equal((await fetch(`${base}/api/jobs/${id}`)).status, 404);
   });
 });
+
+const { capabilities } = await import('../src/tools.js');
+describe('office & vector (run where LibreOffice / Poppler are installed)', () => {
+  test('docx → pdf', { skip: !capabilities.office }, async () => {
+    const { buf } = await convert(fx.docx, 'pdf');
+    assert.equal(buf.subarray(0, 4).toString(), '%PDF');
+  });
+  test('docx → epub / odt / rtf', { skip: !capabilities.office }, async () => {
+    for (const t of ['epub', 'odt', 'rtf']) await convert(fx.docx, t);
+  });
+  test('docx → jpg / png', { skip: !capabilities.officeRaster }, async () => {
+    for (const t of ['jpg', 'png']) await convert(fx.docx, t);
+  });
+  test('docx → svg', { skip: !capabilities.officeSvg }, async () => {
+    const { buf } = await convert(fx.docx, 'svg');
+    assert.match(buf.toString(), /<svg/);
+  });
+  test('pdf → svg (zip of pages)', { skip: !capabilities.pdfSvg }, async () => {
+    const { job } = await convert(fx.pdf, 'svg');
+    assert.match(job.result.name, /\.zip$/);
+  });
+});

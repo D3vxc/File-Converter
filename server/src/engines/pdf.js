@@ -36,7 +36,12 @@ export async function imagesToPdf(inputs, output, { pageSize = 'fit', margin } =
   await fs.writeFile(output, await doc.save());
 }
 
-export async function mergePdfs(inputs, output) {
+export async function mergePdfs(inputs, output, { signal } = {}) {
+  // qpdf copies pages byte-exact (fonts, encryption, annotations), so text never changes.
+  if (tools.qpdf) {
+    await run(tools.qpdf, ['--empty', '--warning-exit-0', '--pages', ...inputs, '--', output], { signal });
+    return;
+  }
   const out = await PDFDocument.create();
   for (const input of inputs) {
     const src = await PDFDocument.load(await fs.readFile(input), { ignoreEncryption: true });
@@ -44,6 +49,15 @@ export async function mergePdfs(inputs, output) {
     pages.forEach((p) => out.addPage(p));
   }
   await fs.writeFile(output, await out.save({ useObjectStreams: true }));
+}
+
+export async function pageCount(input, signal) {
+  if (tools.qpdf) {
+    let out = '';
+    await run(tools.qpdf, ['--show-npages', input], { signal, onStdout: (s) => (out += s) });
+    return Number(out.trim());
+  }
+  return (await PDFDocument.load(await fs.readFile(input), { ignoreEncryption: true })).getPageCount();
 }
 
 /** "1-3, 5, 8-" -> [[0,2],[4,4],[7,last]] (0-based, inclusive) */
@@ -63,17 +77,21 @@ export function parseRanges(spec, pageCount) {
   return ranges;
 }
 
-export async function splitPdf(input, outDir, baseName, { ranges } = {}) {
-  const src = await PDFDocument.load(await fs.readFile(input), { ignoreEncryption: true });
-  const parts = parseRanges(ranges, src.getPageCount());
+export async function splitPdf(input, outDir, baseName, { ranges, signal } = {}) {
+  const parts = parseRanges(ranges, await pageCount(input, signal));
+  const src = tools.qpdf ? null : await PDFDocument.load(await fs.readFile(input), { ignoreEncryption: true });
   const files = [];
   for (const [lo, hi] of parts) {
-    const doc = await PDFDocument.create();
-    const idx = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
-    (await doc.copyPages(src, idx)).forEach((p) => doc.addPage(p));
     const name = lo === hi ? `${baseName}-page-${lo + 1}.pdf` : `${baseName}-pages-${lo + 1}-${hi + 1}.pdf`;
     const file = path.join(outDir, name);
-    await fs.writeFile(file, await doc.save());
+    if (tools.qpdf) {
+      await run(tools.qpdf, ['--empty', '--warning-exit-0', '--pages', input, `${lo + 1}-${hi + 1}`, '--', file], { signal });
+    } else {
+      const doc = await PDFDocument.create();
+      const idx = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+      (await doc.copyPages(src, idx)).forEach((p) => doc.addPage(p));
+      await fs.writeFile(file, await doc.save());
+    }
     files.push(file);
   }
   return files;
@@ -101,19 +119,29 @@ export async function pdfToText(input, output) {
   await fs.writeFile(output, text.map((t) => `${t.trim()}\n`).join('\n\f\n'), 'utf8');
 }
 
+const MAX_RENDER_PAGES = 300;
+
 export async function pdfToImages({ input, outDir, baseName, to, options = {}, signal }) {
   const dpi = Math.min(300, Math.max(50, Number(options.dpi) || 150));
   const prefix = path.join(outDir, baseName);
-  if (tools.pdftoppm) {
-    await run(tools.pdftoppm, [to === 'jpg' ? '-jpeg' : '-png', '-r', String(dpi), input, prefix], { signal });
+  if (to === 'svg') {
+    // One SVG per page (multi-page SVG files are not widely supported).
+    const n = Math.min(await pageCount(input, signal), MAX_RENDER_PAGES);
+    const width = String(n).length;
+    for (let p = 1; p <= n; p++) {
+      const file = `${prefix}-${String(p).padStart(width, '0')}.svg`;
+      await run(tools.pdftocairo, ['-svg', '-f', String(p), '-l', String(p), input, file], { signal });
+    }
+  } else if (tools.pdftoppm) {
+    await run(tools.pdftoppm, [to === 'jpg' ? '-jpeg' : '-png', '-r', String(dpi), '-l', String(MAX_RENDER_PAGES), input, prefix], { signal });
   } else {
     await run(tools.gs, [
       '-dNOPAUSE', '-dBATCH', '-dSAFER', '-dQUIET', `-sDEVICE=${to === 'jpg' ? 'jpeg' : 'png16m'}`,
-      `-r${dpi}`, `-sOutputFile=${prefix}-%03d.${to}`, input,
+      `-r${dpi}`, `-dLastPage=${MAX_RENDER_PAGES}`, `-sOutputFile=${prefix}-%03d.${to}`, input,
     ], { signal });
   }
   const files = (await fs.readdir(outDir))
-    .filter((f) => f.startsWith(baseName) && /\.(png|jpe?g)$/i.test(f))
+    .filter((f) => f.startsWith(baseName) && /\.(png|jpe?g|svg)$/i.test(f))
     .sort()
     .map((f) => path.join(outDir, f));
   return files;
