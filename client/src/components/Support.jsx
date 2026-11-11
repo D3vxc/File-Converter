@@ -26,7 +26,10 @@ export function SupportNudge() {
   return (
     <motion.div className="support-nudge" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
       <Coffee size={18} />
-      <span>Free, no ads, no limits, kept alive by coffee. If this saved you time, you can chip in.</span>
+      <span>
+        <b style={{ color: 'var(--ink)' }}>Glad that worked!</b> Morph is free, ad-free and run by one person. If it saved you some time,
+        a coffee helps keep the servers running.
+      </span>
       <a className="btn btn-sm btn-ghost" href={url} target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
     </motion.div>
   );
