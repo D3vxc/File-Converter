@@ -172,7 +172,8 @@ img, svg { display: block; }
   margin: 22px auto 18px; max-width: 900px;
 }
 .hero h1 .swap { position: relative; display: inline-grid; vertical-align: bottom; overflow: hidden; height: 1.08em; padding-bottom: 0.08em; }
-.hero h1 .swap span { grid-area: 1 / 1; background: linear-gradient(100deg, var(--accent) 10%, var(--accent-2) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
+.hero h1 .swap .swap-sizer { grid-area: 1 / 1; visibility: hidden; white-space: nowrap; }
+.hero h1 .swap .swap-word { grid-area: 1 / 1; justify-self: start; background: linear-gradient(100deg, var(--accent) 10%, var(--accent-2) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
 .hero p.lead { font-size: clamp(16px, 2vw, 19px); color: var(--ink-2); max-width: 600px; margin: 0 auto 36px; }
 
 /* ---------- panel / converter ---------- */

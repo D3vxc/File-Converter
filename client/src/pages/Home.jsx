@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Gauge, Infinity as InfinityIcon, Lock, MonitorSmartphone, Plus, ShieldCheck, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import Converter from '../components/Converter.jsx';
 import ToolCard from '../components/ToolCard.jsx';
 import { formatBytes } from '../lib/formats.js';
@@ -25,16 +25,35 @@ const FAQ = [
   ['Why is my file in a queue?', 'When lots of people convert at once, jobs wait their turn fairly. Quick jobs (images, documents) use a separate lane so they are never stuck behind long videos.'],
 ];
 
-export default function Home() {
-  const { totalConversions, capabilities, limits = {} } = useFormats();
-  const mins = limits.retentionMinutes || 60;
-  const size = limits.maxFileSize ? formatBytes(limits.maxFileSize) : '100 MB';
+/**
+ * The rotating word in the headline. It keeps its own state so the rest of the page doesn't
+ * re-render every tick, and it always reserves the widest word's width so "Convert" never moves.
+ */
+const SwapWord = memo(function SwapWord() {
   const [w, setW] = useState(0);
-  const [open, setOpen] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setW((i) => (i + 1) % WORDS.length), 2200);
     return () => clearInterval(t);
   }, []);
+  return (
+    <span className="swap">
+      {WORDS.map((word) => (
+        <span key={word} className="swap-sizer" aria-hidden="true">{word}</span>
+      ))}
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span key={WORDS[w]} className="swap-word" initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+          {WORDS[w]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+});
+
+export default function Home() {
+  const { totalConversions, capabilities, limits = {} } = useFormats();
+  const mins = limits.retentionMinutes || 60;
+  const size = limits.maxFileSize ? formatBytes(limits.maxFileSize) : '100 MB';
+  const [open, setOpen] = useState(0);
 
   return (
     <>
@@ -44,13 +63,7 @@ export default function Home() {
         </motion.span>
         <h1>
           Convert{' '}
-          <span className="swap">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span key={WORDS[w]} initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                {WORDS[w]}
-              </motion.span>
-            </AnimatePresence>
-          </span>
+          <SwapWord />
           <br />
           into anything.
         </h1>
