@@ -27,7 +27,8 @@ const FAQ = [
 
 /**
  * The rotating word in the headline. It keeps its own state so the rest of the page doesn't
- * re-render every tick, and it always reserves the widest word's width so "Convert" never moves.
+ * re-render every tick. It sits on its own centred line, so a change of word never moves "Convert".
+ * Old and new words share one grid cell, so they cross over in place.
  */
 const SwapWord = memo(function SwapWord() {
   const [w, setW] = useState(0);
@@ -37,10 +38,7 @@ const SwapWord = memo(function SwapWord() {
   }, []);
   return (
     <span className="swap">
-      {WORDS.map((word) => (
-        <span key={word} className="swap-sizer" aria-hidden="true">{word}</span>
-      ))}
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence initial={false}>
         <motion.span key={WORDS[w]} className="swap-word" initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
           {WORDS[w]}
         </motion.span>
@@ -62,9 +60,8 @@ export default function Home() {
           <span className="dot"><Sparkles size={11} /></span> {totalConversions || '390'}+ conversions · free forever
         </motion.span>
         <h1>
-          Convert{' '}
+          Convert
           <SwapWord />
-          <br />
           into anything.
         </h1>
         <p className="lead">Images, video, audio, documents, spreadsheets and archives. No ads, no account, no catch.</p>
